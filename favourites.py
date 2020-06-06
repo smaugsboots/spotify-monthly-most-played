@@ -98,7 +98,7 @@ def consolidate_streams(monthly_sort: dict) -> dict:
     For each list of tracks creates a dictionary, with keys of track names corresponding
     with a value made of a dictionary of the ID and total length played
         {
-            'month' \yyyy-mm\: {track ID 1: proportional plays, track ID 2: proportional plays, etc}
+            month yyyy-mm: {track ID 1: proportional plays, track ID 2: proportional plays, etc}
         }
     '''
 
