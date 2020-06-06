@@ -8,15 +8,20 @@ import timeit
 from math import factorial
 import config
 
+def get_token():
 
-username = config.username
-client_id = config.client_id
-client_secret = config.client_secret
-redirect_uri = config.redirect_uri
-scope = config.scope
+    '''Returns Spotify authorisation token'''
 
-token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client_id, client_secret=client_secret, \
-    redirect_uri=redirect_uri)
+    username = config.username
+    client_id = config.client_id
+    client_secret = config.client_secret
+    redirect_uri = config.redirect_uri
+    scope = config.scope
+
+    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client_id, client_secret=client_secret, \
+        redirect_uri=redirect_uri)
+
+    return token
 
 
 def get_streamings(path: str = 'Data/MyData') -> List[dict]:
@@ -92,7 +97,7 @@ def sort_into_months(streaming_history: dict) -> dict:
     return monthly_sort
 
 
-def consolidate_streams(monthly_sort: dict) -> dict:
+def consolidate_streams(monthly_sort: dict, token: str) -> dict:
 
     '''
     For each list of tracks creates a dictionary, with keys of track names corresponding
@@ -129,7 +134,7 @@ def consolidate_streams(monthly_sort: dict) -> dict:
     return consolidated_sort
 
 
-def create_playlists(consolidated_sort: dict):
+def create_playlists(consolidated_sort: dict, token: str):
 
     '''
     Creates Monthly Most Played playlists.
@@ -166,10 +171,10 @@ def create_playlists(consolidated_sort: dict):
 
 def monthly_most_played():
 
-    token
+    token = get_token()
     history = get_streamings()
     sorted_history = sort_into_months(history)
-    consolidated_history = consolidate_streams(sorted_history)
-    create_playlists(consolidated_history)
+    consolidated_history = consolidate_streams(sorted_history, token)
+    create_playlists(consolidated_history, token)
 
     print('Done')
