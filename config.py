@@ -1,5 +1,0 @@
-username = 'qf2y70lfdxlxj9s4m6lchwkme'
-client_id = '66649f0b19544e4dae5c5b3b30e57c8d'
-client_secret = '89d1aa5061204b8aab23c1a38025238a'
-redirect_uri = 'http://localhost:7777/callback'
-scope = 'playlist-modify-private playlist-modify-public'
