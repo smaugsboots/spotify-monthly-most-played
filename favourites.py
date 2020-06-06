@@ -8,20 +8,35 @@ import timeit
 from math import factorial
 import config
 
+def get_token():
 
-username = config.username
-client_id = config.client_id
-client_secret = config.client_secret
-redirect_uri = config.redirect_uri
-scope = config.scope
+    '''Returns Spotify authorisation token'''
 
-token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client_id, client_secret=client_secret, \
-    redirect_uri=redirect_uri)
+    username = config.username
+    client_id = config.client_id
+    client_secret = config.client_secret
+    redirect_uri = config.redirect_uri
+    scope = config.scope
+
+    token = spotipy.util.prompt_for_user_token(username=username, scope=scope, client_id=client_id, client_secret=client_secret, \
+        redirect_uri=redirect_uri)
+
+    return token
 
 
 def get_streamings(path: str = 'Data/MyData') -> List[dict]:
     
-    '''Returns a list of streamed tracks'''
+    '''
+    Returns a list of dictionaries.
+    
+    Each dictionary represents a track:
+        {
+            'endTime': when track finished playing,
+            'artistName: name of artist,
+            'trackName': name of track,
+            'msPlayed': duration track was played for
+        }
+    '''
 
     files = ['Data/MyData/' + x for x in listdir(path)
              if x.split('.')[0][:-1] == 'StreamingHistory']
@@ -62,6 +77,16 @@ def get_id(track_name: str, artist_name: str, token: str) -> str:
         return None
 
 
+class Track():
+
+    def __init__(self, trackName, artistName, trackID=None, duration=None, plays=None):
+        self.trackName = trackName
+        self.artistName = artistName
+        self.trackID = get_id(self.trackName, self.artistName, get_token())[0]
+        self.duration = get_id(self.trackName, self.artistName, get_token())[1]
+        self.plays = plays
+
+
 def sort_into_months(streaming_history: dict) -> dict:
 
     '''
@@ -72,21 +97,24 @@ def sort_into_months(streaming_history: dict) -> dict:
     monthly_sort = {}
 
     for track in streaming_history:
-        date = str(track['endTime'][0:7])
+        date = str(track['endTime'][0:7])       # Extracts the month a track was streamed
         if date in monthly_sort.keys():
-            monthly_sort[date].append(track)
+            monthly_sort[date].append(track)    # If another track streamed that month, add to list of that month's tracks
         else:
             monthly_sort[date] = []
-            monthly_sort[date].append(track)
+            monthly_sort[date].append(track)    # If not, create a new list of tracks streamed that month
 
     return monthly_sort
 
 
-def consolidate_streams(monthly_sort: dict) -> dict:
+def consolidate_streams(monthly_sort: dict, token: str) -> dict:
 
     '''
     For each list of tracks creates a dictionary, with keys of track names corresponding
     with a value made of a dictionary of the ID and total length played
+        {
+            month yyyy-mm: {track ID 1: proportional plays, track ID 2: proportional plays, etc}
+        }
     '''
 
     consolidated_sort = {}
@@ -116,10 +144,10 @@ def consolidate_streams(monthly_sort: dict) -> dict:
     return consolidated_sort
 
 
-def create_playlists(consolidated_sort: dict):
+def create_playlists(consolidated_sort: dict, token: str):
 
     '''
-    Creates Monthly Top Tracks playlists.
+    Creates Monthly Most Played playlists.
     '''
 
     for month in consolidated_sort:
@@ -153,16 +181,10 @@ def create_playlists(consolidated_sort: dict):
 
 def monthly_most_played():
 
-    token
+    token = get_token()
     history = get_streamings()
     sorted_history = sort_into_months(history)
-    consolidated_history = consolidate_streams(sorted_history)
-    create_playlists(consolidated_history)
+    consolidated_history = consolidate_streams(sorted_history, token)
+    create_playlists(consolidated_history, token)
 
     print('Done')
-
-def summing(x):
-    total = 0
-    for i in range(0, x+1):
-        total += i
-    return total
