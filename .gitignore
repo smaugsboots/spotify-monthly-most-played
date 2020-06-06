@@ -1,4 +1,5 @@
-.vs/
-.vscode/
-Data/
+__pycache__
+.vs
+.vscode
+Data
 .cache-qf2y70lfdxlxj9s4m6lchwkme

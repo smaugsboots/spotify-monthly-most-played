@@ -21,7 +21,17 @@ token = spotipy.util.prompt_for_user_token(username=username, scope=scope, clien
 
 def get_streamings(path: str = 'Data/MyData') -> List[dict]:
     
-    '''Returns a list of streamed tracks'''
+    '''
+    Returns a list of dictionaries.
+    
+    Each dictionary represents a track:
+        {
+            'endTime': when track finished playing,
+            'artistName: name of artist,
+            'trackName': name of track,
+            'msPlayed': duration track was played for
+        }
+    '''
 
     files = ['Data/MyData/' + x for x in listdir(path)
              if x.split('.')[0][:-1] == 'StreamingHistory']
@@ -72,12 +82,12 @@ def sort_into_months(streaming_history: dict) -> dict:
     monthly_sort = {}
 
     for track in streaming_history:
-        date = str(track['endTime'][0:7])
+        date = str(track['endTime'][0:7])       # Extracts the month a track was streamed
         if date in monthly_sort.keys():
-            monthly_sort[date].append(track)
+            monthly_sort[date].append(track)    # If another track streamed that month, add to list of that month's tracks
         else:
             monthly_sort[date] = []
-            monthly_sort[date].append(track)
+            monthly_sort[date].append(track)    # If not, create a new list of tracks streamed that month
 
     return monthly_sort
 
@@ -87,6 +97,9 @@ def consolidate_streams(monthly_sort: dict) -> dict:
     '''
     For each list of tracks creates a dictionary, with keys of track names corresponding
     with a value made of a dictionary of the ID and total length played
+        {
+            'month' \yyyy-mm\: {track ID 1: proportional plays, track ID 2: proportional plays, etc}
+        }
     '''
 
     consolidated_sort = {}
@@ -119,7 +132,7 @@ def consolidate_streams(monthly_sort: dict) -> dict:
 def create_playlists(consolidated_sort: dict):
 
     '''
-    Creates Monthly Top Tracks playlists.
+    Creates Monthly Most Played playlists.
     '''
 
     for month in consolidated_sort:
@@ -160,9 +173,3 @@ def monthly_most_played():
     create_playlists(consolidated_history)
 
     print('Done')
-
-def summing(x):
-    total = 0
-    for i in range(0, x+1):
-        total += i
-    return total
