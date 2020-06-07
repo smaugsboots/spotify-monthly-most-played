@@ -32,7 +32,7 @@ def get_streamings(path: str = 'Data/MyData') -> List[dict]:
     Each dictionary represents a track:
         {
             'endTime': when track finished playing,
-            'artistName: name of artist,
+            'artistName': name of artist,
             'trackName': name of track,
             'msPlayed': duration track was played for
         }
@@ -85,10 +85,11 @@ class Track():
         self.trackID = get_id(self.trackName, self.artistName, get_token())[0]
         self.duration = get_id(self.trackName, self.artistName, get_token())[1]
         self.plays = 0
+        self.proportionalPlays = float(self.plays)/float(self.duration)
     
     def __repr__(self):
-        return f'Track ' + self.trackName + self.artistName + self.trackID + str(self.duration)\
-            + str(self.plays)
+        return f'Track: ' + self.trackName + ', ' + self.artistName + ', ' + self.trackID \
+            + ', ' + str(self.duration) + ', ' + str(self.plays)
 
 
 def sort_into_months(streaming_history: dict) -> dict:
@@ -117,11 +118,12 @@ def consolidate_streams(monthly_sort: dict, token: str) -> dict:
     For each list of tracks creates a dictionary, with keys of track names corresponding
     with a value made of a dictionary of the ID and total length played
         {
-            month yyyy-mm: {track ID 1: proportional plays, track ID 2: proportional plays, etc}
+            month yyyy-mm: {track_id: {trackName: __, artistName: __, plays: __}}
         }
     '''
 
-    consolidated_sort = {}
+    consolidated_sort_ids = {}
+    consolidated_sort_tracks = {}
 
     for month in monthly_sort:
 
@@ -136,25 +138,31 @@ def consolidate_streams(monthly_sort: dict, token: str) -> dict:
                 duration = float(get_id(track_name=name, artist_name=artist, token=token)[1])
                 proportion_played = time_played/duration
                 if track_id in consolidated_month.keys():
-                    consolidated_month[track_id] += proportion_played
+                    consolidated_month[track_id]['plays'] += proportion_played
                 else:
-                    consolidated_month[track_id] = proportion_played
+                    consolidated_month[track_id] = {'trackName': name, 'artistName': artist, \
+                        'plays': proportion_played}
             else:
                 continue
 
-        sorted_month = sorted(consolidated_month.items(), key=lambda x: x[1], reverse=True)
-        consolidated_sort[month] = sorted_month
+        sorted_list = sorted(consolidated_month, key=lambda x: x['plays'], reverse=True)
+        consolidated_sort_ids[month] = sorted_list
 
-    return consolidated_sort
+        sorted_dict = {}
+        for item in sorted_list:
+            sorted_dict[item] = consolidated_month[item]
+        consolidated_sort_tracks[month] = sorted_dict
+
+    return consolidated_sort_ids, consolidated_sort_tracks
 
 
-def create_playlists(consolidated_sort: dict, token: str):
+def create_playlists(consolidated_sort_ids: dict, token: str):
 
     '''
     Creates Monthly Most Played playlists.
     '''
 
-    for month in consolidated_sort:
+    for month in consolidated_sort_ids:
         headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -174,7 +182,7 @@ def create_playlists(consolidated_sort: dict, token: str):
         counter = 0
         playlist_tracks = []
         while counter < 25:
-            playlist_tracks.append('spotify:track:' + consolidated_sort[month][counter][0])
+            playlist_tracks.append('spotify:track:' + consolidated_sort_ids[month][counter])
             counter += 1
         
         track_data = {'uris' : playlist_tracks}
@@ -188,7 +196,7 @@ def monthly_most_played():
     token = get_token()
     history = get_streamings()
     sorted_history = sort_into_months(history)
-    consolidated_history = consolidate_streams(sorted_history, token)
+    consolidated_history = consolidate_streams(sorted_history, token)[0]
     create_playlists(consolidated_history, token)
 
     print('Done')
