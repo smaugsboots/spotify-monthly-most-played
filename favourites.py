@@ -145,7 +145,7 @@ def consolidate_streams(monthly_sort: dict, token: str) -> dict:
             else:
                 continue
 
-        sorted_list = sorted(consolidated_month, key=lambda x: x['plays'], reverse=True)
+        sorted_list = sorted(consolidated_month, key=lambda x: x[2], reverse=True)
         consolidated_sort_ids[month] = sorted_list
 
         sorted_dict = {}
