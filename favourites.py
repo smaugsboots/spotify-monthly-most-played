@@ -8,6 +8,7 @@ import timeit
 from math import factorial
 import config
 
+
 def get_token():
 
     '''Returns Spotify authorisation token'''
@@ -75,21 +76,6 @@ def get_id(track_name: str, artist_name: str, token: str) -> str:
         return track_id, duration
     except:
         return None
-
-
-class Track():
-
-    def __init__(self, track: dict):
-        self.trackName = track['trackName']
-        self.artistName = track['artistName']
-        self.trackID = get_id(self.trackName, self.artistName, get_token())[0]
-        self.duration = get_id(self.trackName, self.artistName, get_token())[1]
-        self.plays = 0
-        self.proportionalPlays = float(self.plays)/float(self.duration)
-    
-    def __repr__(self):
-        return f'Track: ' + self.trackName + ', ' + self.artistName + ', ' + self.trackID \
-            + ', ' + str(self.duration) + ', ' + str(self.plays)
 
 
 def sort_into_months(streaming_history: dict) -> dict:
