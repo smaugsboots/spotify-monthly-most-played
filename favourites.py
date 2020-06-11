@@ -8,7 +8,6 @@ import timeit
 from math import factorial
 import config
 
-
 def get_token():
 
     '''Returns Spotify authorisation token'''

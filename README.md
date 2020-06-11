@@ -10,5 +10,6 @@ That can be done [here](https://www.spotify.com/uk/account/privacy/).
 ~~- [ ] create a track class~~
 - [ ] streamline so fewer API requests need to be made
 - [ ] choose which month to create a playlist for
+- [ ] choose how many tracks to include in playlists created
 - [ ] create a function that returns a CSV with most-played data
 - [ ] make script run from command line
