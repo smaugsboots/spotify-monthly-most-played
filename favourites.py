@@ -6,6 +6,7 @@ import requests
 import json as js
 import timeit
 from math import factorial
+import csv
 import config
 
 def get_token():
@@ -107,8 +108,7 @@ def consolidate_streams(monthly_sort: dict, token: str) -> dict:
         }
     '''
 
-    consolidated_sort_ids = {}
-    consolidated_sort_tracks = {}
+    consolidated_sort = {}
 
     for month in monthly_sort:
 
@@ -130,15 +130,10 @@ def consolidate_streams(monthly_sort: dict, token: str) -> dict:
             else:
                 continue
 
-        sorted_list = sorted(consolidated_month, key=lambda x: x[2], reverse=True)
-        consolidated_sort_ids[month] = sorted_list
+        sorted_list = sorted(consolidated_month.items(), key=lambda x: x[1]['plays'], reverse=True)
+        consolidated_sort[month] = sorted_list
 
-        sorted_dict = {}
-        for item in sorted_list:
-            sorted_dict[item] = consolidated_month[item]
-        consolidated_sort_tracks[month] = sorted_dict
-
-    return consolidated_sort_ids, consolidated_sort_tracks
+    return consolidated_sort
 
 
 def create_playlists(consolidated_sort_ids: dict, token: str):
@@ -167,7 +162,7 @@ def create_playlists(consolidated_sort_ids: dict, token: str):
         counter = 0
         playlist_tracks = []
         while counter < 25:
-            playlist_tracks.append('spotify:track:' + consolidated_sort_ids[month][counter])
+            playlist_tracks.append('spotify:track:' + consolidated_sort_ids[month][counter][0])
             counter += 1
         
         track_data = {'uris' : playlist_tracks}
@@ -185,3 +180,17 @@ def monthly_most_played():
     create_playlists(consolidated_history, token)
 
     print('Done')
+
+
+def top_tracks(month):
+
+    token = get_token()
+    history = get_streamings()
+    sorted_history = sort_into_months(history)
+
+    data = consolidate_streams(sorted_history, token)[month]
+    with open('toptracks.csv','w') as out:
+        csv_out=csv.writer(out)
+        csv_out.writerow(['id', 'details'])
+        for row in data:
+            csv_out.writerow(row)
