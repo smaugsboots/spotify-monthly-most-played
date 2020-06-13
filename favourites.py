@@ -4,7 +4,7 @@ from os import listdir
 import spotipy
 import requests
 import json as js
-import timeit
+import time
 from math import factorial
 import csv
 import config
@@ -118,16 +118,17 @@ def consolidate_streams(monthly_sort: dict, token: str) -> dict:
             name = track["trackName"]
             artist = track["artistName"]
             time_played = float(track['msPlayed'])
-            if get_id(track_name=name, artist_name=artist, token=token) != None:
-                track_id = get_id(track_name=name, artist_name=artist, token=token)[0]
-                duration = float(get_id(track_name=name, artist_name=artist, token=token)[1])
+            try:
+                details = get_id(track_name=name, artist_name=artist, token=token)
+                track_id = details[0]
+                duration = float(details[1])
                 proportion_played = time_played/duration
                 if track_id in consolidated_month.keys():
                     consolidated_month[track_id]['plays'] += proportion_played
                 else:
                     consolidated_month[track_id] = {'trackName': name, 'artistName': artist, \
                         'plays': proportion_played}
-            else:
+            except:
                 continue
 
         sorted_list = sorted(consolidated_month.items(), key=lambda x: x[1]['plays'], reverse=True)
@@ -136,7 +137,7 @@ def consolidate_streams(monthly_sort: dict, token: str) -> dict:
     return consolidated_sort
 
 
-def create_playlists(consolidated_sort_ids: dict, token: str):
+def create_playlists(consolidated_sort_ids: dict, num_tracks: int, token: str):
 
     '''
     Creates Monthly Most Played playlists.
@@ -152,7 +153,7 @@ def create_playlists(consolidated_sort_ids: dict, token: str):
         name = {"name":month, "description":"Monthly Most Played", "public":False}
         data = js.dumps(name)
 
-        response1 = requests.post('https://api.spotify.com/v1/users/qf2y70lfdxlxj9s4m6lchwkme/playlists', \
+        response1 = requests.post('https://api.spotify.com/v1/users/' + config.username + '/playlists', \
             headers=headers, data=data)
 
         json = response1.json()
@@ -161,7 +162,7 @@ def create_playlists(consolidated_sort_ids: dict, token: str):
 
         counter = 0
         playlist_tracks = []
-        while counter < 25:
+        while counter < num_tracks:
             playlist_tracks.append('spotify:track:' + consolidated_sort_ids[month][counter][0])
             counter += 1
         
@@ -171,13 +172,13 @@ def create_playlists(consolidated_sort_ids: dict, token: str):
         response2 = requests.post(playlist_url, headers=headers, data=track_data_json)
 
 
-def monthly_most_played():
+def monthly_most_played(num_tracks: int = 25):
 
     token = get_token()
     history = get_streamings()
     sorted_history = sort_into_months(history)
-    consolidated_history = consolidate_streams(sorted_history, token)[0]
-    create_playlists(consolidated_history, token)
+    consolidated_history = consolidate_streams(sorted_history, token)
+    create_playlists(consolidated_history, num_tracks, token)
 
     print('Done')
 
@@ -189,8 +190,8 @@ def top_tracks(month):
     sorted_history = sort_into_months(history)
 
     data = consolidate_streams(sorted_history, token)[month]
-    with open('toptracks.csv','w') as out:
-        csv_out=csv.writer(out)
+    with open('toptracks'+month+'.csv', 'w') as out:
+        csv_out = csv.writer(out)
         csv_out.writerow(['id', 'details'])
         for row in data:
             csv_out.writerow(row)

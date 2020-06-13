@@ -7,9 +7,9 @@ To download your streaming history for the past year, request your data from Spo
 That can be done [here](https://www.spotify.com/uk/account/privacy/).
 
 ## To Do:
-~~- [ ] create a track class~~
+~~- create a track class~~
 - [ ] streamline so fewer API requests need to be made
 - [ ] choose which month to create a playlist for
-- [ ] choose how many tracks to include in playlists created
+- [x] choose how many tracks to include in playlists created
 - [x] create a function that returns a CSV with most-played data *
 - [ ] make script run from command line
