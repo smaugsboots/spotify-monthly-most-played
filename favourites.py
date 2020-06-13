@@ -98,13 +98,18 @@ def sort_into_months(streaming_history: dict) -> dict:
     return monthly_sort
 
 
-def consolidate_streams(monthly_sort: dict, token: str) -> dict:
+def consolidate_streams(monthly_sort: dict, chosen_month: str, token: str) -> dict:
 
     '''
-    For each list of tracks creates a dictionary, with keys of track names corresponding
-    with a value made of a dictionary of the ID and total length played
+    For each list of tracks creates a dictionary, with month keys corresponding to a list of tracks streamed that month.
+
+    Each list is a set of tuples, where the tuples represent track items.
+    Each list has tracks sorted in descending order by number of plays.
+
+    Each tuple contains the track ID, and dictionary of the track's details.
+
         {
-            month yyyy-mm: {track_id: {trackName: __, artistName: __, plays: __}}
+            month yyyy-mm: [(track_id, {trackName: __, artistName: __, plays: __}), ], 
         }
     '''
 
@@ -112,27 +117,32 @@ def consolidate_streams(monthly_sort: dict, token: str) -> dict:
 
     for month in monthly_sort:
 
-        consolidated_month = {}
+        if chosen_month != None and chosen_month != month:
+            continue
 
-        for track in monthly_sort[month]:
-            name = track["trackName"]
-            artist = track["artistName"]
-            time_played = float(track['msPlayed'])
-            try:
-                details = get_id(track_name=name, artist_name=artist, token=token)
-                track_id = details[0]
-                duration = float(details[1])
-                proportion_played = time_played/duration
-                if track_id in consolidated_month.keys():
-                    consolidated_month[track_id]['plays'] += proportion_played
-                else:
-                    consolidated_month[track_id] = {'trackName': name, 'artistName': artist, \
-                        'plays': proportion_played}
-            except:
-                continue
+        else:
 
-        sorted_list = sorted(consolidated_month.items(), key=lambda x: x[1]['plays'], reverse=True)
-        consolidated_sort[month] = sorted_list
+            consolidated_month = {}
+
+            for track in monthly_sort[month]:
+                name = track["trackName"]
+                artist = track["artistName"]
+                time_played = float(track['msPlayed'])
+                try:
+                    details = get_id(track_name=name, artist_name=artist, token=token)
+                    track_id = details[0]
+                    duration = float(details[1])
+                    proportion_played = time_played/duration
+                    if track_id in consolidated_month.keys():
+                        consolidated_month[track_id]['plays'] += proportion_played
+                    else:
+                        consolidated_month[track_id] = {'trackName': name, 'artistName': artist, \
+                            'plays': proportion_played}
+                except:
+                    continue
+
+            sorted_list = sorted(consolidated_month.items(), key=lambda x: x[1]['plays'], reverse=True)
+            consolidated_sort[month] = sorted_list
 
     return consolidated_sort
 
@@ -142,6 +152,8 @@ def create_playlists(consolidated_sort_ids: dict, num_tracks: int, token: str):
     '''
     Creates Monthly Most Played playlists.
     '''
+
+    counter = 0
 
     for month in consolidated_sort_ids:
         headers = {
@@ -170,28 +182,43 @@ def create_playlists(consolidated_sort_ids: dict, num_tracks: int, token: str):
         track_data_json = js.dumps(track_data)
 
         response2 = requests.post(playlist_url, headers=headers, data=track_data_json)
+        counter += 1
+
+    return counter
 
 
-def monthly_most_played(num_tracks: int = 25):
-
-    token = get_token()
-    history = get_streamings()
-    sorted_history = sort_into_months(history)
-    consolidated_history = consolidate_streams(sorted_history, token)
-    create_playlists(consolidated_history, num_tracks, token)
-
-    print('Done')
-
-
-def top_tracks(month):
+def monthly_most_played(month: str = None, num_tracks: int = 25):
+    
+    start = time.time()
 
     token = get_token()
     history = get_streamings()
     sorted_history = sort_into_months(history)
+    consolidated_history = consolidate_streams(sorted_history, month, token)
+    counter = create_playlists(consolidated_history, num_tracks, token)
+    
+    time_taken = time.time() - start
+    print('Done. %d playlist(s) created.' % counter)
+    print('----- %f seconds -----' % time_taken)
 
-    data = consolidate_streams(sorted_history, token)[month]
-    with open('toptracks'+month+'.csv', 'w') as out:
+
+def top_tracks(month: str):
+
+    '''Creates CSV with details of tracks streamed in the given month, in descending order of plays.'''
+
+    start = time.time()
+
+    token = get_token()
+    history = get_streamings()
+    sorted_history = sort_into_months(history)
+
+    data = consolidate_streams(sorted_history, month, token)[month]
+    with open('toptracks_'+month+'.csv', 'w') as out:
         csv_out = csv.writer(out)
         csv_out.writerow(['id', 'details'])
         for row in data:
             csv_out.writerow(row)
+    
+    time_taken = time.time() - start
+    print('Done. CSV created.')
+    print('----- %f seconds -----' % time_taken)
