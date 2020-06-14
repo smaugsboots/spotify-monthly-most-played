@@ -5,7 +5,6 @@ import spotipy
 import requests
 import json as js
 import time
-from math import factorial
 import csv
 import config
 
@@ -153,7 +152,7 @@ def create_playlists(consolidated_sort_ids: dict, num_tracks: int, token: str):
     Creates Monthly Most Played playlists.
     '''
 
-    counter = 0
+    count = 0
 
     for month in consolidated_sort_ids:
         headers = {
@@ -162,7 +161,12 @@ def create_playlists(consolidated_sort_ids: dict, num_tracks: int, token: str):
             'Authorization': f'Bearer ' + token,
         }
 
-        name = {"name":month, "description":"Monthly Most Played", "public":False}
+        name = {
+            "name": month,
+            "description": "Your " + str(num_tracks) + " most played tracks of " + month + ". \
+                Created with spotify-monthly-most-played by Sameer Aggarwal.",
+            "public": False
+        }
         data = js.dumps(name)
 
         response1 = requests.post('https://api.spotify.com/v1/users/' + config.username + '/playlists', \
@@ -181,10 +185,10 @@ def create_playlists(consolidated_sort_ids: dict, num_tracks: int, token: str):
         track_data = {'uris' : playlist_tracks}
         track_data_json = js.dumps(track_data)
 
-        response2 = requests.post(playlist_url, headers=headers, data=track_data_json)
-        counter += 1
+        requests.post(playlist_url, headers=headers, data=track_data_json)
+        count += 1
 
-    return counter
+    return count
 
 
 def monthly_most_played(month: str = None, num_tracks: int = 25):
@@ -202,7 +206,7 @@ def monthly_most_played(month: str = None, num_tracks: int = 25):
     print('----- %f seconds -----' % time_taken)
 
 
-def top_tracks(month: str):
+def top_tracks(month: str, consolidated: dict = None):
 
     '''Creates CSV with details of tracks streamed in the given month, in descending order of plays.'''
 
@@ -212,7 +216,10 @@ def top_tracks(month: str):
     history = get_streamings()
     sorted_history = sort_into_months(history)
 
-    data = consolidate_streams(sorted_history, month, token)[month]
+    if consolidated == None:
+        data = consolidate_streams(sorted_history, month, token)[month]
+    else:
+        data = consolidated[month]
     with open('toptracks_'+month+'.csv', 'w') as out:
         csv_out = csv.writer(out)
         csv_out.writerow(['id', 'details'])
@@ -220,5 +227,5 @@ def top_tracks(month: str):
             csv_out.writerow(row)
     
     time_taken = time.time() - start
-    print('Done. CSV created.')
-    print('----- %f seconds -----' % time_taken)
+    print('Done! CSV created.')
+    print('------- %f seconds -------\n' % time_taken)
