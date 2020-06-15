@@ -1,12 +1,9 @@
 from favourites import *
 
-print('\n\nspotify-monthly-most-played by Sameer Aggarwal\n______________________________________________\n')
-
 
 def main():
 
     token = get_token()
-    history = get_streamings()
     sorted_history = sort_into_months(history)
     avail_months = list(sorted_history.keys())
     
@@ -20,24 +17,37 @@ def main():
             print("\nSorry, that's not a valid month.")
             continue
         else:
-            print('\nCreating playlists (beep boop) ...\nPlease allow around 5 minutes (!)\n')
+            print('\n* * *\n')
+            break
+
+    while True:
+        try:
+            num_tracks = int(input('Choose how many tracks you want included in each playlist (25 is a good default): '))
+        except ValueError:
+            print("\nSorry, that's not a valid response. Please enter an integer.")
+            continue
+        if num_tracks <= 0:
+            print("\nSorry, that's not a valid response. Please enter an integer greater than 0.")
+        else:
+            print('\n* * *\n\nCreating playlists (beep boop) ...\nPlease allow around 5 minutes (!)\n')
             break
 
     start = time.time()
     consolidated_history = consolidate_streams(sorted_history, month, token)
-    counter = create_playlists(consolidated_history, 25, token)
+    counter = create_playlists(consolidated_history, num_tracks, token)
     time_taken = time.time() - start
     print('Done! %d playlist(s) created.' % counter)
-    print('------- %f seconds -------\n' % time_taken)
+    print('------- %f seconds -------\n\n* * *\n' % time_taken)
 
     while True:
-        choice = input('Would you like a CSV with most played data for ' + month + ' created? (y/n): ')
+        choice = input('Would you like a CSV with info about your most played tracks for ' + month + ' created? (y/n): ')
         if choice == 'y':
-            print('\nCreating CSV (beep boop) ...\n')
+            print('\n* * *\n\nCreating CSV (beep boop) ...\n')
             top_tracks(month, consolidated_history)
+            print('\n* * *\n')
             break
         elif choice == 'n':
-            print('')
+            print('\n* * *\n')
             break
         else:
             print("\nSorry, that's not a valid choice.")
@@ -52,10 +62,31 @@ def main():
             continue
     
     if run_again == 'y':
+        print('\n* * * * * * *')
         main()
     else:
-        print('\nThank you for using spotify-monthly-most-played.\n')
+        print('______________________________________________\n\nThank you for using spotify-monthly-most-played.\n')
 
 
 if __name__ == "__main__":
+
+    print('\n\nspotify-monthly-most-played by Sameer Aggarwal\n______________________________________________\n')
+    input('Press ENTER to continue...\n')
+    print('* * * * * * *\n')
+
+    while True:
+        path = input("Enter the path (absolute or relative) for the directory where your streaming history is located \
+(the files will be JSON files with the name format 'StreamingHistoryX'):\n")
+        try:
+            history = get_streamings(path)
+            if len(history) == 0:
+                print("\nSorry, that's not a valid response. Please enter the correct path.")
+                continue
+            else:
+                print('\n* * * * * * *')
+                break
+        except FileNotFoundError:
+            print("\nSorry, that's not a valid response. Please enter a valid path.")
+            continue
+
     main()

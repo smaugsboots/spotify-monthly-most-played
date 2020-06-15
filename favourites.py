@@ -163,8 +163,8 @@ def create_playlists(consolidated_sort_ids: dict, num_tracks: int, token: str):
 
         name = {
             "name": month,
-            "description": "Your " + str(num_tracks) + " most played tracks of " + month + ". \
-                Created with spotify-monthly-most-played by Sameer Aggarwal.",
+            "description": "Your " + str(num_tracks) + " most played tracks for " + month + ". \
+Created with spotify-monthly-most-played by Sameer Aggarwal.",
             "public": False
         }
         data = js.dumps(name)
@@ -179,8 +179,11 @@ def create_playlists(consolidated_sort_ids: dict, num_tracks: int, token: str):
         counter = 0
         playlist_tracks = []
         while counter < num_tracks:
-            playlist_tracks.append('spotify:track:' + consolidated_sort_ids[month][counter][0])
-            counter += 1
+            try:
+                playlist_tracks.append('spotify:track:' + consolidated_sort_ids[month][counter][0])
+                counter += 1
+            except:
+                break
         
         track_data = {'uris' : playlist_tracks}
         track_data_json = js.dumps(track_data)
