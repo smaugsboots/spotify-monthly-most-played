@@ -223,7 +223,7 @@ def top_tracks(month: str, path: str, consolidated: dict = None):
         data = consolidate_streams(sorted_history, month, token)[month]
     else:
         data = consolidated[month]
-    with open('toptracks_'+month+'.csv', 'w') as out:
+    with open('toptracks_'+month+'.csv', 'w', encoding='utf-8') as out:
         csv_out = csv.writer(out)
         csv_out.writerow(['id', 'details'])
         for row in data:

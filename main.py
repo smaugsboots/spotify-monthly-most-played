@@ -76,8 +76,14 @@ if __name__ == "__main__":
     print('* * * * * * *\n')
 
     while True:
-        path = input("Enter the path (absolute or relative) for the directory where your streaming history is located \
-(the files will be JSON files with the name format 'StreamingHistoryX'). Use forward slashes for separators:\n")
+        pathstring = input("Enter the path (absolute or relative) for the directory where your streaming history is located \
+(the files will be JSON files with the name format 'StreamingHistoryX'):\n")
+        path = ''
+        for i in pathstring:
+            if i == '\\':
+                path += '/'
+            else:
+                path += i
         try:
             history = fav.get_streamings(path)
             if len(history) == 0:
