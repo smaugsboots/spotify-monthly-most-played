@@ -24,7 +24,7 @@ def get_token():
     return token
 
 
-def get_streamings(path: str = 'Data/MyData') -> List[dict]:
+def get_streamings(path: str) -> List[dict]:
     
     '''
     Returns a list of dictionaries.
@@ -38,7 +38,7 @@ def get_streamings(path: str = 'Data/MyData') -> List[dict]:
         }
     '''
 
-    files = ['Data/MyData/' + x for x in listdir(path)
+    files = [str(path+'/') + x for x in listdir(path)
              if x.split('.')[0][:-1] == 'StreamingHistory']
     
     all_streamings = []
@@ -194,12 +194,12 @@ Created with spotify-monthly-most-played by Sameer Aggarwal.",
     return count
 
 
-def monthly_most_played(month: str = None, num_tracks: int = 25):
+def monthly_most_played(path: str = 'Data/MyData', month: str = None, num_tracks: int = 25):
     
     start = time.time()
 
     token = get_token()
-    history = get_streamings()
+    history = get_streamings(path)
     sorted_history = sort_into_months(history)
     consolidated_history = consolidate_streams(sorted_history, month, token)
     counter = create_playlists(consolidated_history, num_tracks, token)
@@ -209,14 +209,14 @@ def monthly_most_played(month: str = None, num_tracks: int = 25):
     print('----- %f seconds -----' % time_taken)
 
 
-def top_tracks(month: str, consolidated: dict = None):
+def top_tracks(month: str, path: str, consolidated: dict = None):
 
     '''Creates CSV with details of tracks streamed in the given month, in descending order of plays.'''
 
     start = time.time()
 
     token = get_token()
-    history = get_streamings()
+    history = get_streamings(path)
     sorted_history = sort_into_months(history)
 
     if consolidated == None:

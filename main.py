@@ -44,7 +44,7 @@ def main():
         choice = input('Would you like a CSV with info about your most played tracks for ' + month + ' created? (y/n): ')
         if choice == 'y':
             print('\n* * *\n\nCreating CSV (beep boop) ...\n')
-            fav.top_tracks(month, consolidated_history)
+            fav.top_tracks(month, path, consolidated_history)
             print('* * *\n')
             break
         elif choice == 'n':
