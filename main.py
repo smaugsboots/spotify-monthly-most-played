@@ -1,10 +1,11 @@
-from favourites import *
+import favourites as fav
+import time
 
 
 def main():
 
-    token = get_token()
-    sorted_history = sort_into_months(history)
+    token = fav.get_token()
+    sorted_history = fav.sort_into_months(history)
     avail_months = list(sorted_history.keys())
     
     print('\nStreaming history was found for the following months:') 
@@ -33,8 +34,8 @@ def main():
             break
 
     start = time.time()
-    consolidated_history = consolidate_streams(sorted_history, month, token)
-    counter = create_playlists(consolidated_history, num_tracks, token)
+    consolidated_history = fav.consolidate_streams(sorted_history, month, token)
+    counter = fav.create_playlists(consolidated_history, num_tracks, token)
     time_taken = time.time() - start
     print('Done! %d playlist(s) created.' % counter)
     print('------- %f seconds -------\n\n* * *\n' % time_taken)
@@ -43,8 +44,8 @@ def main():
         choice = input('Would you like a CSV with info about your most played tracks for ' + month + ' created? (y/n): ')
         if choice == 'y':
             print('\n* * *\n\nCreating CSV (beep boop) ...\n')
-            top_tracks(month, consolidated_history)
-            print('\n* * *\n')
+            fav.top_tracks(month, consolidated_history)
+            print('* * *\n')
             break
         elif choice == 'n':
             print('\n* * *\n')
@@ -65,7 +66,7 @@ def main():
         print('\n* * * * * * *')
         main()
     else:
-        print('______________________________________________\n\nThank you for using spotify-monthly-most-played.\n')
+        print('\n______________________________________________\n\nThank you for using spotify-monthly-most-played.\n')
 
 
 if __name__ == "__main__":
@@ -76,9 +77,9 @@ if __name__ == "__main__":
 
     while True:
         path = input("Enter the path (absolute or relative) for the directory where your streaming history is located \
-(the files will be JSON files with the name format 'StreamingHistoryX'):\n")
+(the files will be JSON files with the name format 'StreamingHistoryX'). Use forward slashes for separators:\n")
         try:
-            history = get_streamings(path)
+            history = fav.get_streamings(path)
             if len(history) == 0:
                 print("\nSorry, that's not a valid response. Please enter the correct path.")
                 continue
